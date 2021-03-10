@@ -42,7 +42,9 @@ class CurrencyLayer {
                 if let data = data {
                     let response = try JSONSerialization.jsonObject(with: data, options: [])
                     if let dictionary = response as? [String: Any], let currenciesJSON = dictionary["currencies"] as? [String: String] {
-                        completionHandler(currenciesJSON.map { Currency(code: $0.key, name: $0.value) })
+                        DispatchQueue.main.async {
+                            completionHandler(currenciesJSON.map { Currency(code: $0.key, name: $0.value) })
+                        }
                     }
                 }
             } catch let error {
@@ -57,7 +59,9 @@ class CurrencyLayer {
                 if let data = data {
                     let response = try JSONSerialization.jsonObject(with: data, options: [])
                     if let dictionary = response as? [String: Any], let ratesJSON = dictionary["quotes"] as? [String: Double] {
-                        completionHandler(ratesJSON.map { Rate(code: $0.key, value: $0.value) })
+                        DispatchQueue.main.async {
+                            completionHandler(ratesJSON.map { Rate(code: $0.key, value: $0.value) })
+                        }
                     }
                 }
             } catch let error {
