@@ -9,13 +9,9 @@ import SwiftUI
 
 struct CurrencyDashboardView: View {
     @ObservedObject var viewModel = CurrencyViewModel.shared
-    @State var currentCurrency: Currency
+    @State var currentCurrency: Currency = Currency.defaultCurrency
     @State var amount: String = "1"
     @State var showCurrenciesSheet: Bool = false
-    
-    init() {
-        _currentCurrency = State(wrappedValue: CurrencyViewModel.shared.currencies.first!)
-    }
     
     var body: some View {
         NavigationView {
