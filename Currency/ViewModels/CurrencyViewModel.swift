@@ -47,11 +47,18 @@ class CurrencyViewModel: ObservableObject {
     }
     
     private func filterRateByCurrency(from: Currency, to: Currency) -> Double {
+        // USD is based for all convertions
+        let baseCurrency = "USD"
         var value: Double = 1
         rates.forEach { rate in
             let convertionCurrency = rate.code.components(withLength: 3)
-            if convertionCurrency[0] == from.code && convertionCurrency[1] == to.code {
-                value = rate.value
+            //let fromCurrency = convertionCurrency[0]
+            let toCurrency = convertionCurrency[1]
+            if from.code != baseCurrency, from.code == toCurrency {
+                value /= rate.value
+            }
+            if toCurrency == to.code {
+                value *= rate.value
             }
         }
         return value
