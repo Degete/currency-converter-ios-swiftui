@@ -71,7 +71,7 @@ struct CurrencyDashboardView: View {
                 content: {
                     NavigationView {
                         List {
-                            ForEach(viewModel.currencies.sorted { $0.name < $1.name }, id: \.code) { currency in
+                            ForEach(viewModel.currencies.sorted { $0.name < $1.name }.filter { !viewModel.showCurrencies.contains($0) }, id: \.code) { currency in
                                 Button(action: {
                                     viewModel.add(currency: currency)
                                     showCurrenciesSheet.toggle()
