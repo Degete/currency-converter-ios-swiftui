@@ -21,7 +21,7 @@ struct CurrencyDashboardView: View {
                         Form {
                             Section() {
                                 Picker(selection: $currentCurrency, label: Text(currentCurrency.code)) {
-                                    ForEach(viewModel.currencies, id: \.code) { currency in
+                                    ForEach(viewModel.currencies.sorted { $0.name < $1.name }, id: \.code) { currency in
                                         Text(currency.name)
                                             .tag(currency)
                                     }
@@ -71,7 +71,7 @@ struct CurrencyDashboardView: View {
                 content: {
                     NavigationView {
                         List {
-                            ForEach(viewModel.currencies, id: \.code) { currency in
+                            ForEach(viewModel.currencies.sorted { $0.name < $1.name }, id: \.code) { currency in
                                 Button(action: {
                                     viewModel.add(currency: currency)
                                     showCurrenciesSheet.toggle()
