@@ -10,40 +10,66 @@ import Foundation
 class CurrencyViewModel: ObservableObject {
     static let shared = CurrencyViewModel()
     
-    var currencies: [Currency]
-    @Published var showCurrencies: [Currency]
-    @Published var rates: [Rate]
+    @Published var currencies: [Currency] {
+        didSet {
+            saveCurrencies()
+        }
+    }
+    @Published var rates: [Rate] {
+        didSet {
+            saveRates()
+        }
+    }
+    @Published var showCurrencies: [Currency] {
+        didSet {
+            saveCurrencyList()
+        }
+    }
     
     init() {
         currencies = (UserDefaults.standard.array(forKey: "currencies") as? [Data] ?? [])
             .map { try! JSONDecoder().decode(Currency.self, from: $0) }
-            .sorted { $0.code < $1.code }
         rates = (UserDefaults.standard.object(forKey: "rates") as? [Data] ?? [])
             .map { try! JSONDecoder().decode(Rate.self, from: $0) }
-        showCurrencies = (UserDefaults.standard.object(forKey: "currenciesList") as? [Data] ?? [])
+        showCurrencies = (UserDefaults.standard.object(forKey: "showCurrencies") as? [Data] ?? [])
             .map { try! JSONDecoder().decode(Currency.self, from: $0) }
-            .sorted { $0.code < $1.code }
         
         if currencies.isEmpty {
             CurrencyLayer.shared.fetchCurrencies(completionHandler: { currencies in
                 self.currencies = currencies
-                let data = currencies.map { try? JSONEncoder().encode($0) }
-                UserDefaults.standard.set(data, forKey: "currencies")
+            }, errorHandler: { error in
+                self.currencies = Currency.defaultCurrenciesList
+                print("ERROR: \(error.localizedDescription)")
+            })
+            
+        }
+        
+        if rates.isEmpty {
+            CurrencyLayer.shared.fetchRates(completionHandler: { rates in
+                self.rates = rates
             }, errorHandler: { error in
                 print("ERROR: \(error.localizedDescription)")
             })
         }
         
-        if rates.isEmpty {
-            CurrencyLayer.shared.fetchRates(completionHandler: { rates in
-                print("RATES: \(rates)")
-                self.rates = rates
-                let data = rates.map { try? JSONEncoder().encode($0) }
-                UserDefaults.standard.set(data, forKey: "rates")
-            }, errorHandler: { error in
-                print("ERROR: \(error.localizedDescription)")
-            })
+        if showCurrencies.isEmpty {
+            self.showCurrencies = Currency.defaultCurrenciesList
         }
+    }
+    
+    private func saveCurrencies() {
+        let data = currencies.map { try? JSONEncoder().encode($0) }
+        UserDefaults.standard.set(data, forKey: "currencies")
+    }
+    
+    private func saveRates() {
+        let data = rates.map { try? JSONEncoder().encode($0) }
+        UserDefaults.standard.set(data, forKey: "rates")
+    }
+    
+    private func saveCurrencyList() {
+        let data = showCurrencies.map { try? JSONEncoder().encode($0) }
+        UserDefaults.standard.setValue(data, forKey: "showCurrencies")
     }
     
     private func filterRateByCurrency(from: Currency, to: Currency) -> Double {
@@ -70,8 +96,6 @@ class CurrencyViewModel: ObservableObject {
     
     func add(currency: Currency) {
         showCurrencies.append(currency)
-        let data = showCurrencies.map { try? JSONEncoder().encode($0) }
-        UserDefaults.standard.setValue(data, forKey: "currenciesList")
     }
     
     func removeCurrency(at index: IndexSet) {
