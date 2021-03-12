@@ -53,7 +53,7 @@ class CurrencyViewModel: ObservableObject {
         }
     }
     
-    private func fetchCurrencies() {
+    func fetchCurrencies() {
         CurrencyLayer.shared.fetchCurrencies(completionHandler: { currencies in
             self.currencies = currencies
         }, errorHandler: { error in
@@ -62,7 +62,7 @@ class CurrencyViewModel: ObservableObject {
         })
     }
     
-    private func fetchRates() {
+    func fetchRates() {
         CurrencyLayer.shared.fetchRates(completionHandler: { rates in
             self.rates = rates
             self.lastUpdate = Date()

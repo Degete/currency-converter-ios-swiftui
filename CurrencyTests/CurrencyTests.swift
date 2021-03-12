@@ -22,6 +22,39 @@ class CurrencyTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
+    
+    func testRateConvertion() throws {
+        let viewModel = CurrencyViewModel()
+        let currencies = Currency.defaultCurrenciesList
+        let usd = currencies[4]
+        let euro = currencies[1]
+        let exchangeRate = 1.5
+        let rates = [
+            Rate(code: "\(usd.code)\(euro.code))", value: exchangeRate),
+        ]
+        viewModel.currencies = currencies
+        viewModel.rates = rates
+        
+        // 1 USD -> 1.5 EUR
+        XCTAssertEqual(viewModel.convert(from: usd, to: euro, amount: 1), 1.5)
+        
+        // 3 EUR -> 2 USD
+        XCTAssertEqual(viewModel.convert(from: euro, to: usd, amount: 3), 2)
+    }
+    
+    func testRateExpiration() throws {
+        let viewModel = MockViewModel()
+        
+        // Last update 5min
+        viewModel.lastUpdate = Date().addingTimeInterval(TimeInterval(-60*5))
+        viewModel.checkRatesExpiration()
+        XCTAssert(viewModel.dataWasFetched == false)
+        
+        // Last update 35min
+        viewModel.lastUpdate = Date().addingTimeInterval(TimeInterval(-60*35))
+        viewModel.checkRatesExpiration()
+        XCTAssert(viewModel.dataWasFetched == true)
+    }
 
     func testPerformanceExample() throws {
         // This is an example of a performance test case.
@@ -30,4 +63,11 @@ class CurrencyTests: XCTestCase {
         }
     }
 
+}
+
+class MockViewModel: CurrencyViewModel {
+    var dataWasFetched = false
+    override func fetchRates() {
+        self.dataWasFetched = true
+    }
 }
