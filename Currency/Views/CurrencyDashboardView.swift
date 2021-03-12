@@ -31,6 +31,17 @@ struct CurrencyDashboardView: View {
                                     .keyboardType(.decimalPad)
                                     .multilineTextAlignment(.trailing)
                                     .padding()
+                                    .onChange(of: amount) { value in
+                                        viewModel.checkRatesExpiration()
+                                    }
+                            }
+                            Section() {
+                                HStack {
+                                    Text("Last update:")
+                                    Spacer()
+                                    Text(lastUpdate())
+                                }
+                                .font(.subheadline)
                             }
                             Section() {
                                 ForEach(viewModel.showCurrencies, id: \.code) { currency in
@@ -84,6 +95,16 @@ struct CurrencyDashboardView: View {
                     }
                 })
         }
+    }
+    
+    // MARK: - Drawing variables
+    private func lastUpdate() -> String {
+        if let lastUpdate = viewModel.lastUpdate {
+            let dateFormatter = DateFormatter()
+            dateFormatter.timeStyle = .short
+            return dateFormatter.string(from: lastUpdate)
+        }
+        return ""
     }
 }
 

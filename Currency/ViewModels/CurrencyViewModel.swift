@@ -25,6 +25,11 @@ class CurrencyViewModel: ObservableObject {
             saveCurrencyList()
         }
     }
+    @Published var lastUpdate: Date? {
+        didSet {
+            saveLastUpdate()
+        }
+    }
     
     init() {
         currencies = (UserDefaults.standard.array(forKey: "currencies") as? [Data] ?? [])
@@ -33,28 +38,37 @@ class CurrencyViewModel: ObservableObject {
             .map { try! JSONDecoder().decode(Rate.self, from: $0) }
         showCurrencies = (UserDefaults.standard.object(forKey: "showCurrencies") as? [Data] ?? [])
             .map { try! JSONDecoder().decode(Currency.self, from: $0) }
+        lastUpdate = UserDefaults.standard.object(forKey: "lastUpdate") as? Date
         
         if currencies.isEmpty {
-            CurrencyLayer.shared.fetchCurrencies(completionHandler: { currencies in
-                self.currencies = currencies
-            }, errorHandler: { error in
-                self.currencies = Currency.defaultCurrenciesList
-                print("ERROR: \(error.localizedDescription)")
-            })
-            
+            fetchCurrencies()
         }
         
         if rates.isEmpty {
-            CurrencyLayer.shared.fetchRates(completionHandler: { rates in
-                self.rates = rates
-            }, errorHandler: { error in
-                print("ERROR: \(error.localizedDescription)")
-            })
+            fetchRates()
         }
         
         if showCurrencies.isEmpty {
             self.showCurrencies = Currency.defaultCurrenciesList
         }
+    }
+    
+    private func fetchCurrencies() {
+        CurrencyLayer.shared.fetchCurrencies(completionHandler: { currencies in
+            self.currencies = currencies
+        }, errorHandler: { error in
+            self.currencies = Currency.defaultCurrenciesList
+            print("ERROR: \(error.localizedDescription)")
+        })
+    }
+    
+    private func fetchRates() {
+        CurrencyLayer.shared.fetchRates(completionHandler: { rates in
+            self.rates = rates
+            self.lastUpdate = Date()
+        }, errorHandler: { error in
+            print("ERROR: \(error.localizedDescription)")
+        })
     }
     
     private func saveCurrencies() {
@@ -70,6 +84,20 @@ class CurrencyViewModel: ObservableObject {
     private func saveCurrencyList() {
         let data = showCurrencies.map { try? JSONEncoder().encode($0) }
         UserDefaults.standard.setValue(data, forKey: "showCurrencies")
+    }
+    
+    private func saveLastUpdate() {
+        UserDefaults.standard.setValue(lastUpdate, forKey: "lastUpdate")
+    }
+    
+    func checkRatesExpiration() {
+        let expirationMinutes = 30
+        if let lastUpdate = lastUpdate {
+            let minutes = Date().minutesFromNow(date: lastUpdate)
+            if minutes > expirationMinutes {
+                fetchRates()
+            }
+        }
     }
     
     private func filterRateByCurrency(from: Currency, to: Currency) -> Double {
@@ -100,15 +128,5 @@ class CurrencyViewModel: ObservableObject {
     
     func removeCurrency(at index: IndexSet) {
         index.forEach { showCurrencies.remove(at: $0) }
-    }
-}
-
-extension String {
-    func components(withLength length: Int) -> [String] {
-        return stride(from: 0, to: self.count, by: length).map {
-            let start = self.index(self.startIndex, offsetBy: $0)
-            let end = self.index(start, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
-            return String(self[start..<end])
-        }
     }
 }
