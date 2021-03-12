@@ -28,9 +28,10 @@ struct CurrencyDashboardView: View {
                                 }
                                 TextField("Amount", text: $amount)
                                     .font(.title)
+                                    .modifier(TextFieldClearButton(text: $amount))
                                     .keyboardType(.decimalPad)
                                     .multilineTextAlignment(.trailing)
-                                    .padding()
+                                    .frame(height: rowHeight)
                                     .onChange(of: amount) { value in
                                         viewModel.checkRatesExpiration()
                                     }
@@ -53,7 +54,7 @@ struct CurrencyDashboardView: View {
                                         Text(String(format: "%.2f", viewModel.convert(from: currentCurrency, to: currency, amount: Double(amount) ?? 1)))
                                             .font(.title)
                                     }
-                                    .frame(height: 50)
+                                    .frame(height: rowHeight)
                                 }
                                 .onDelete(perform: viewModel.removeCurrency)
                                 Button(action: { showCurrenciesSheet.toggle() }) {
@@ -98,6 +99,8 @@ struct CurrencyDashboardView: View {
     }
     
     // MARK: - Drawing variables
+    private var rowHeight: CGFloat = 50
+    
     private func lastUpdate() -> String {
         if let lastUpdate = viewModel.lastUpdate {
             let dateFormatter = DateFormatter()
