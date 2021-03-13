@@ -51,7 +51,7 @@ struct CurrencyDashboardView: View {
                                             Text(currency.code)
                                         }
                                         Spacer()
-                                        Text(String(format: "%.2f", viewModel.convert(from: currentCurrency, to: currency, amount: Double(amount) ?? 1)))
+                                        Text(rateConvertion(to: currency))
                                             .font(.title)
                                     }
                                     .frame(height: rowHeight)
@@ -108,6 +108,13 @@ struct CurrencyDashboardView: View {
             return dateFormatter.string(from: lastUpdate)
         }
         return ""
+    }
+    
+    private func rateConvertion(to currency: Currency) -> String {
+        if let amount = Double(amount) {
+            return String(format: "%.2f", viewModel.convert(from: currentCurrency, to: currency, amount: amount))
+        }
+        return "-"
     }
 }
 
