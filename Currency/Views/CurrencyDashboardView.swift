@@ -15,9 +15,6 @@ struct CurrencyDashboardView: View {
     
     var body: some View {
         NavigationView {
-            GeometryReader { geometry in
-                ScrollView {
-                    VStack {
                         Form {
                             Section() {
                                 Picker(selection: $currentCurrency, label: Text(currentCurrency.code)) {
@@ -66,9 +63,6 @@ struct CurrencyDashboardView: View {
                                 }
                             }
                         }
-                    }
-                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
-                }
                 .navigationTitle("Currency")
                 .navigationBarItems(
                     trailing: Button(action: {
@@ -96,7 +90,6 @@ struct CurrencyDashboardView: View {
                     }
                 })
         }
-    }
     
     // MARK: - Drawing variables
     private var rowHeight: CGFloat = 50
